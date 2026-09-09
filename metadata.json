@@ -1,0 +1,6 @@
+{
+  "name": "ActionBeam Audio Meter (AU / VST for macOS)",
+  "description": "macOS compatible AU/VST audio meter plugin featuring Pikachu discharging dynamic electric lightning (十万伏特) as the visual audio dB meter.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
