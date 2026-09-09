@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # macOS Universal 2 (Apple Silicon M1/M2/M3/M4 + Intel x86_64)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "" FORCE)
-
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "" FORCE)
 # If JUCE is not already added, find or add it
 if(NOT TARGET juce::juce_audio_utils)
     add_subdirectory(JUCE)
