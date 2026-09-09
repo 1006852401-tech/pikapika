@@ -25,7 +25,6 @@ juce_add_plugin(PikachuAudioMeter
     PLUGIN_CODE "PkMe"
     FORMATS AU VST3 Standalone
     PRODUCT_NAME "Pikachu Thunderbolt Audio Meter"
-    AU_MAIN_TYPE "kAudioUnitType_Effect"
 )
 
 target_include_directories(PikachuAudioMeter PRIVATE Source)
@@ -47,10 +46,3 @@ target_link_libraries(PikachuAudioMeter PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags
 )
-
-if(APPLE)
-    target_link_libraries(PikachuAudioMeter PRIVATE
-        "-framework WebKit"
-        "-framework Cocoa"
-    )
-endif()
