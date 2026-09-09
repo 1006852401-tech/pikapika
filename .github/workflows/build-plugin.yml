@@ -1,0 +1,63 @@
+name: Build Pikachu Audio Plugin (macOS AU & VST3)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build Universal 2 (Apple Silicon + Intel) AU & VST3
+    runs-on: macos-14
+    steps:
+      - name: 1. 检出代码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: 2. 安装 Node.js 并构建 1:1 前端网页
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 3. 构建前端产物 (dist)
+        run: |
+          npm ci
+          npm run build
+
+      - name: 4. 下载 JUCE 音频框架
+        run: |
+          if [ ! -d "JUCE" ]; then
+            git clone --depth 1 --branch 8.0.4 https://github.com/juce-framework/JUCE.git
+          fi
+
+      - name: 5. CMake 配置 (生成 Universal 2 通用二进制)
+        run: |
+          cmake -B build -G Xcode \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13"
+
+      - name: 6. 编译 AU 和 VST3 原生插件
+        run: |
+          cmake --build build --config Release
+
+      - name: 7. 将前端 dist 静态包注入插件内部 Resources
+        run: |
+          AU_RES="build/PikachuAudioMeter_artefacts/Release/AU/PikachuAudioMeter.component/Contents/Resources/dist"
+          VST_RES="build/PikachuAudioMeter_artefacts/Release/VST3/PikachuAudioMeter.vst3/Contents/Resources/dist"
+          mkdir -p "$AU_RES" "$VST_RES"
+          cp -R dist/* "$AU_RES/"
+          cp -R dist/* "$VST_RES/"
+
+      - name: 8. 压缩生成可直接安装的 ZIP 包
+        run: |
+          mkdir -p release-pkg
+          cd build/PikachuAudioMeter_artefacts/Release
+          zip -r ../../../release-pkg/PikachuAudioMeter-macOS-Universal.zip AU/ VST3/
+
+      - name: 9. 上传发布成品文件 (可在网页直接下载)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PikachuAudioMeter-macOS-AU-VST3
+          path: release-pkg/*.zip
