@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # macOS Universal 2 (Apple Silicon M1/M2/M3/M4 + Intel x86_64)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "" FORCE)
+
 # If JUCE is not already added, find or add it
 if(NOT TARGET juce::juce_audio_utils)
     add_subdirectory(JUCE)
@@ -14,6 +15,7 @@ endif()
 
 juce_add_plugin(PikachuAudioMeter
     COMPANY_NAME "PikaLab"
+    BUNDLE_ID "com.pikalab.pikachumeter"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
@@ -25,6 +27,8 @@ juce_add_plugin(PikachuAudioMeter
     PRODUCT_NAME "Pikachu Thunderbolt Audio Meter"
     AU_MAIN_TYPE "kAudioUnitType_Effect"
 )
+
+target_include_directories(PikachuAudioMeter PRIVATE Source)
 
 target_sources(PikachuAudioMeter PRIVATE
     Source/PluginProcessor.cpp
@@ -43,3 +47,10 @@ target_link_libraries(PikachuAudioMeter PRIVATE
     juce::juce_recommended_config_flags
     juce::juce_recommended_warning_flags
 )
+
+if(APPLE)
+    target_link_libraries(PikachuAudioMeter PRIVATE
+        "-framework WebKit"
+        "-framework Cocoa"
+    )
+endif()
