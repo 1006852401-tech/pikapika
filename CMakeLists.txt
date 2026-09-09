@@ -36,6 +36,11 @@ target_sources(PikachuAudioMeter PRIVATE
     Source/PluginEditor.h
 )
 
+target_compile_definitions(PikachuAudioMeter PRIVATE
+    JUCE_WEB_BROWSER=1
+    JUCE_USE_CURL=0
+)
+
 target_link_libraries(PikachuAudioMeter PRIVATE
     juce::juce_audio_utils
     juce::juce_audio_processors
