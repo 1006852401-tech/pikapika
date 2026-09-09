@@ -1,6 +1,8 @@
 #pragma once
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
+#include <optional>
+#include <memory>
 
 class PikachuAudioMeterEditor : public juce::AudioProcessorEditor,
                                 private juce::Timer
@@ -14,10 +16,10 @@ public:
     void timerCallback() override;
 
 private:
+    std::optional<juce::WebBrowserComponent::Resource> getResource (const juce::String& url);
+
     PikachuAudioMeterAudioProcessor& audioProcessor;
-    juce::WebBrowserComponent webView {
-        juce::WebBrowserComponent::Options()
-    };
+    std::unique_ptr<juce::WebBrowserComponent> webView;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PikachuAudioMeterEditor)
 };
