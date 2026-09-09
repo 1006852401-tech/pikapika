@@ -17,7 +17,6 @@ private:
     PikachuAudioMeterAudioProcessor& audioProcessor;
     juce::WebBrowserComponent webView {
         juce::WebBrowserComponent::Options()
-            .withBackend (juce::WebBrowserComponent::Options::Backend::webview2_or_wkwebview)
     };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PikachuAudioMeterEditor)
