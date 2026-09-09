@@ -70,7 +70,7 @@ PikachuAudioMeterEditor::PikachuAudioMeterEditor (PikachuAudioMeterAudioProcesso
             .withResourceProvider ([this] (const juce::String& url) {
                 return getResource (url);
             })
-            .withKeepPageLoadedWhenBrowserIsHidden (true)
+            .withKeepPageLoadedWhenBrowserIsHidden()
     );
 
     addAndMakeVisible (*webView);
