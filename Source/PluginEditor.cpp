@@ -6,10 +6,11 @@ PikachuAudioMeterEditor::PikachuAudioMeterEditor (PikachuAudioMeterAudioProcesso
     // 1. 严格锁定 16:9 比例，杜绝宿主拉伸
     setResizable (true, true);
     setResizeLimits (640, 360, 1600, 900);
-    getConstrainer()->setFixedAspectRatio (16.0 / 9.0);
+    if (auto* c = getConstrainer())
+        c->setFixedAspectRatio (16.0 / 9.0);
     setSize (880, 495);
 
-    // 2. 挂载硬件加速 WKWebView
+    // 2. 挂载硬件加速 WebView
     addAndMakeVisible (webView);
 
     // 读取插件包内部 Resources/dist/index.html
@@ -18,15 +19,16 @@ PikachuAudioMeterEditor::PikachuAudioMeterEditor (PikachuAudioMeterAudioProcesso
 
     if (resourcesDist.existsAsFile())
     {
-        webView.goToURL (juce::URL ("file://" + resourcesDist.getFullPathName()));
+        juce::String fileUrl = juce::String ("file://") + resourcesDist.getFullPathName();
+        webView.goToURL (fileUrl);
     }
     else
     {
         // 独立运行或本地开发调试
-        webView.goToURL (juce::URL ("http://127.0.0.1:3000"));
+        webView.goToURL (juce::String ("http://127.0.0.1:3000"));
     }
 
-    // 3. 60Hz 独立刷新向 JS 网页推送实时分贝数据
+    // 3. 60Hz 独立定时器刷新向 JS 网页推送实时分贝数据
     startTimerHz (60);
 }
 
@@ -55,7 +57,7 @@ void PikachuAudioMeterEditor::timerCallback()
 
     // 调起网页中的 window.__onDawMeterUpdate
     juce::String js = juce::String::formatted (
-        "if(window.__onDawMeterUpdate)window.__onDawMeterUpdate(%.2f,%.2f,%.2f,%.2f);",
+        "if(window.__onDawMeterUpdate){window.__onDawMeterUpdate(%.2f,%.2f,%.2f,%.2f);}",
         lPeak, rPeak, lRms, rRms);
     webView.evaluateJavascript (js);
 }
