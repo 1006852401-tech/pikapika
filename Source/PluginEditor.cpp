@@ -18,12 +18,12 @@ PikachuAudioMeterEditor::PikachuAudioMeterEditor (PikachuAudioMeterAudioProcesso
 
     if (resourcesDist.existsAsFile())
     {
-        webView.goToURL ("file://" + resourcesDist.getFullPathName());
+        webView.goToURL (juce::URL ("file://" + resourcesDist.getFullPathName()));
     }
     else
     {
         // 独立运行或本地开发调试
-        webView.goToURL ("http://127.0.0.1:3000");
+        webView.goToURL (juce::URL ("http://127.0.0.1:3000"));
     }
 
     // 3. 60Hz 独立刷新向 JS 网页推送实时分贝数据
@@ -55,7 +55,7 @@ void PikachuAudioMeterEditor::timerCallback()
 
     // 调起网页中的 window.__onDawMeterUpdate
     juce::String js = juce::String::formatted (
-        "if(window.__onDawMeterUpdate)window.__onDawMeterUpdate(%.2f, %.2f, %.2f, %.2f);",
+        "if(window.__onDawMeterUpdate)window.__onDawMeterUpdate(%.2f,%.2f,%.2f,%.2f);",
         lPeak, rPeak, lRms, rRms);
     webView.evaluateJavascript (js);
 }
