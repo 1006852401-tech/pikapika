@@ -82,3 +82,10 @@ juce::AudioProcessorEditor* PikachuAudioMeterAudioProcessor::createEditor()
 {
     return new PikachuAudioMeterEditor (*this);
 }
+
+//==============================================================================
+// JUCE 插件必需的全局启动函数（没有它链接器会报 exit code 2）
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+{
+    return new PikachuAudioMeterAudioProcessor();
+}
