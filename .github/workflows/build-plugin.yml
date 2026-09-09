@@ -15,49 +15,55 @@ jobs:
         with:
           submodules: recursive
 
-      - name: 2. 安装 Node.js 并构建 1:1 前端网页
+      - name: 2. 安装 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 3. 构建前端产物 (dist)
+      - name: 3. 构建前端 1:1 静态网页 (dist)
         run: |
-          npm ci
+          npm install --legacy-peer-deps
           npm run build
+          ls -la dist/
 
-      - name: 4. 下载 JUCE 音频框架
+      - name: 4. 准备 C++ 工程与 JUCE 框架
         run: |
           if [ ! -d "JUCE" ]; then
             git clone --depth 1 --branch 8.0.4 https://github.com/juce-framework/JUCE.git
           fi
 
-      - name: 5. CMake 配置 (生成 Universal 2 通用二进制)
+      - name: 5. CMake 配置 (Universal 2: ARM64 + x86_64)
         run: |
-          cmake -B build -G Xcode \
+          cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
             -DCMAKE_OSX_DEPLOYMENT_TARGET="10.13"
 
       - name: 6. 编译 AU 和 VST3 原生插件
         run: |
-          cmake --build build --config Release
+          cmake --build build --config Release --parallel 4
 
-      - name: 7. 将前端 dist 静态包注入插件内部 Resources
+      - name: 7. 将前端网页注入插件包并打包
         run: |
-          AU_RES="build/PikachuAudioMeter_artefacts/Release/AU/PikachuAudioMeter.component/Contents/Resources/dist"
-          VST_RES="build/PikachuAudioMeter_artefacts/Release/VST3/PikachuAudioMeter.vst3/Contents/Resources/dist"
-          mkdir -p "$AU_RES" "$VST_RES"
-          cp -R dist/* "$AU_RES/"
-          cp -R dist/* "$VST_RES/"
+          mkdir -p release-pkg/AU release-pkg/VST3
+          
+          # 自动寻找编译出来的 .component 和 .vst3
+          find build -name "*.component" -exec cp -R {} release-pkg/AU/ \;
+          find build -name "*.vst3" -exec cp -R {} release-pkg/VST3/ \;
+          
+          # 注入 dist 静态网页资源到 Resources
+          find release-pkg -name "*.component" -o -name "*.vst3" | while read -r plugin; do
+            mkdir -p "$plugin/Contents/Resources/dist"
+            cp -R dist/* "$plugin/Contents/Resources/dist/"
+          done
+          
+          cd release-pkg
+          zip -r ../PikachuAudioMeter-macOS-Universal.zip AU/ VST3/
+          cd ..
+          ls -lh PikachuAudioMeter-macOS-Universal.zip
 
-      - name: 8. 压缩生成可直接安装的 ZIP 包
-        run: |
-          mkdir -p release-pkg
-          cd build/PikachuAudioMeter_artefacts/Release
-          zip -r ../../../release-pkg/PikachuAudioMeter-macOS-Universal.zip AU/ VST3/
-
-      - name: 9. 上传发布成品文件 (可在网页直接下载)
+      - name: 8. 上传发布成品安装包
         uses: actions/upload-artifact@v4
         with:
           name: PikachuAudioMeter-macOS-AU-VST3
-          path: release-pkg/*.zip
+          path: PikachuAudioMeter-macOS-Universal.zip
